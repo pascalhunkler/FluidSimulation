@@ -1,5 +1,7 @@
 #include "GUI.h"
 #include "Simulation.h"
+#include "IncompressibleSimulation.h"
+#include "CompressibleSimulation.h"
 #include <glm/glm.hpp>
 #include <vector>
 #include <queue>
@@ -8,7 +10,7 @@
 #include <iostream>
 #include "IO.h"
 
-enum class SimulationScenario { breakingDam, leakyDam, droppingFluid, flowingFluid, restingFluid, last };
+
 
 void createSimulationScenario(Simulation& simulation, const SimulationScenario environment)
 {
@@ -113,72 +115,45 @@ int main(int argc, char* argv[])
 	std::mt19937 mt(rd());
 	std::uniform_real_distribution<double> dist(0.0f, 1.0f);
 
-	// Let the user decide what scenario to simulate
-	for (int i = 0; i < static_cast<int>(SimulationScenario::last); ++i)
-	{
-		std::cout << i << '\t';
-		switch (static_cast<SimulationScenario>(i))
-		{
-		
-		case SimulationScenario::breakingDam:
-			std::cout << "breaking dam" << std::endl;
-			break;
-
-		case SimulationScenario::leakyDam:
-			std::cout << "leaky dam" << std::endl;
-			break;
-			
-		case SimulationScenario::droppingFluid:
-			std::cout << "dropping fluid" << std::endl;
-			break;
-
-		case SimulationScenario::flowingFluid:
-			std::cout << "flowing fluid" << std::endl;
-			break;
-
-		case SimulationScenario::restingFluid:
-			std::cout << "resting fluid" << std::endl;
-			break;
-			
-		default:
-			break;
-		}
-	}
-	int scenario;
-	std::cin >> scenario;
-
+	SimulationScenario scenario;
+	PressureComputationMethod method;
+	float particleSize, viscosity, gravity, stiffness, timeStep;
 	IO io;
-
-	// choose first scenario if user gives invalid input
-	if (scenario < 0 || scenario >= static_cast<int>(SimulationScenario::last))
-	{
-		scenario = 0;
-	}
+	io.decide_parameters(scenario, method, particleSize, viscosity, gravity, stiffness, timeStep);
 
 	// Create GUI and simulation
 	const int width = 1200;
 	const int height = 750;
-	const float particleSize = 8;
 	GUI gui(width, height, particleSize);
-	Simulation simulation(width, height, particleSize, 2*particleSize, 1, 200, 1E+6, 9.81);
+	Simulation* simulation;
+	switch (method)
+	{
+	case PressureComputationMethod::compressible:
+		simulation = new CompressibleSimulation(width, height, particleSize, 2 * particleSize, 1, viscosity, gravity, stiffness);
+		break;
+	case PressureComputationMethod::incompressible:
+	default:
+		simulation = new IncompressibleSimulation(width, height, particleSize, 2 * particleSize, 1, viscosity, gravity);
+		break;
+	}
 
-	createSimulationScenario(simulation, static_cast<SimulationScenario>(scenario));
+	createSimulationScenario(*simulation, scenario);
 
-	const float timeDifference = 0.08;
 	while(gui.update())
 	{
 		// Repeat this as long as the window isn't closed
 
 		// only one simulation step per draw
-		simulation.performSimulationStep(timeDifference);
+		simulation->performSimulationStep(timeStep);
 		
 		// Get the particle positions in the simulation and draw them
-		gui.draw(simulation.getParticles());
+		gui.draw(simulation->getParticles());
 
 		char* picture_data = gui.get_picture_data();
 		io.save_picture(picture_data, width, height);
 		delete[] picture_data;
 	}
-
+	
+	delete simulation;
 	return 0;
 }

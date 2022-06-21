@@ -42,6 +42,12 @@
     <ClCompile Include="IO.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="CompressibleSimulation.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="IncompressibleSimulation.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShader.glsl">
@@ -71,6 +77,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="IO.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="CompressibleSimulation.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="IncompressibleSimulation.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

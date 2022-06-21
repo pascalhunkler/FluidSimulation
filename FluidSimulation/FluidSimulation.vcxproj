@@ -145,7 +145,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CompressibleSimulation.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="IncompressibleSimulation.cpp" />
     <ClCompile Include="IO.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="GUI.cpp" />
@@ -159,7 +161,9 @@
     <None Include="VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CompressibleSimulation.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="IncompressibleSimulation.h" />
     <ClInclude Include="IO.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleUniformGrid.h" />

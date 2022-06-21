@@ -4,7 +4,7 @@
 #include <iostream>
 #include <array>
 
-Simulation::Simulation(int width, int height, float particleSize, float kernelSupport, float fluidDensity, float viscosity, float stiffness, float gravity)
+Simulation::Simulation(int width, int height, float particleSize, float kernelSupport, float fluidDensity, float viscosity, float gravity)
 {
 	this->width = width;
 	this->height = height;
@@ -18,9 +18,11 @@ Simulation::Simulation(int width, int height, float particleSize, float kernelSu
 	this->fluidDensity = fluidDensity;
 	this->particleMass = fluidDensity * particleSize * particleSize;
 	this->viscosity = viscosity;
-	this->stiffness = stiffness;
 	this->gravity = gravity;
 }
+
+Simulation::~Simulation() = default;
+
 
 void Simulation::addParticle(glm::vec2 position, glm::vec3 color, bool boundary)
 {
@@ -67,8 +69,7 @@ void Simulation::performSimulationStep(float timeDifference)
 	//computeDensitiesDifferential(neighbors, timeDifference);
 
 	// compute pressure of each particle
-	//std::vector<float> pressure = computePressuresSE();
-	std::vector<float> pressure = computePressuresIISPH(neighbors, timeDifference);
+	std::vector<float> pressure = computePressures(neighbors, timeDifference);
 	
 	// compute pressure accelerations
 	std::vector<glm::vec2> accP = computePressureAccelerations(neighbors, pressure);
@@ -80,6 +81,19 @@ void Simulation::performSimulationStep(float timeDifference)
 	// update color of each non boundary particle
 	updateColor();
 }
+
+std::vector<float> Simulation::computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) const
+{
+	// This function is virtual and thus will be overridden, so just return a 0 vector.
+	std::vector<float> pressure;
+	pressure.resize(particles.size());
+	for (unsigned int i = 0; i < particles.size(); ++i)
+	{
+		pressure[i] = 0;
+	}
+	return pressure;
+}
+
 
 std::vector<unsigned int> Simulation::getNeighbors(unsigned int particleIndex, const ParticleUniformGrid& grid) const
 {
@@ -201,98 +215,6 @@ void Simulation::computeDensitiesDifferential(const std::vector<std::vector<unsi
 	}
 	averageDensity /= float(amountFluidParticles);
 	//std::cout << averageDensity << std::endl;
-}
-
-
-std::vector<float> Simulation::computePressuresSE() const
-{
-	std::vector<float> pressure;
-	pressure.resize(particles.size());
-	
-	#pragma loop(hint_parallel(0))
-	for (unsigned int i = 0; i < particles.size(); ++i)
-	{
-		if (particles[i].boundary)
-		{
-			continue;
-		}
-		pressure[i] = stiffness * (particles[i].density / fluidDensity - 1);
-		if (pressure[i] < 0)
-		{
-			pressure[i] = 0;
-		}
-	}
-	return pressure;
-}
-
-std::vector<float> Simulation::computePressuresIISPH(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference)
-{
-	std::vector<float> pressure;
-	pressure.resize(particles.size());
-	std::vector<float> diagonal;
-	diagonal.resize(particles.size());
-	std::vector<float> source;
-	source.resize(particles.size());
-
-	#pragma loop(hint_parallel(0))
-	for (unsigned int i = 0; i < particles.size(); ++i)
-	{
-		if (particles[i].boundary)
-		{
-			continue;
-		}
-		// compute diagonal a_ii and source s_i and initialize pressure to 0
-		float d = 0;
-		float s = 0;
-		for (auto& j : neighborVector[i])
-		{
-			glm::vec2 nabla_w_ij = kernelGradient(particles[i].position, particles[j].position);
-			d += glm::dot(nabla_w_ij, nabla_w_ij);
-			s += glm::dot(particles[i].velocity - particles[j].velocity, nabla_w_ij);
-		}
-		d *= -timeDifference * timeDifference * particleMass * particleMass / (particles[i].density * particles[i].density);
-		diagonal[i] = d;
-		s *= -particleMass * timeDifference;
-		s += fluidDensity - particles[i].density;
-		source[i] = s;
-		pressure[i] = 0;
-	}
-
-	float error;
-	int amountParticles = 0;
-	std::vector<glm::vec2> acc;
-	do
-	{
-		error = 0;
-		acc = computePressureAccelerations(neighborVector, pressure);
-		
-		#pragma loop(hint_parallel(0))
-		for (unsigned int i = 0; i < particles.size(); ++i)
-		{
-			if (particles[i].boundary)
-			{
-				continue;
-			}
-			float laplacian = 0;
-			for (auto& j : neighborVector[i])
-			{
-				glm::vec2 nabla_w_ij = kernelGradient(particles[i].position, particles[j].position);
-				laplacian += glm::dot(acc[i] - acc[j], nabla_w_ij);
-			}
-			laplacian *= particleMass * timeDifference * timeDifference;
-
-			pressure[i] += (0.5 / diagonal[i]) * (source[i] - laplacian);
-			if (pressure[i] < 0)
-			{
-				pressure[i] = 0;
-			}
-			error += glm::abs((laplacian - source[i]) / fluidDensity);
-			amountParticles++;
-		}
-		error /= float(amountParticles);
-	} while (error >= 0.001);
-	
-	return pressure;
 }
 
 std::vector<glm::vec2> Simulation::computeNonPressureAccelerations(const std::vector<std::vector<unsigned>>& neighborVector) const
@@ -492,11 +414,6 @@ float Simulation::getParticleSize() const
 float Simulation::getViscosity() const
 {
 	return viscosity;
-}
-
-float Simulation::getStiffness() const
-{
-	return stiffness;
 }
 
 float Simulation::getGravity() const

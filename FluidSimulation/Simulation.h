@@ -16,8 +16,10 @@ public:
 	 *	@param stiffness stiffness of the fluid, default value: 2000
 	 *	@param gravity gravitational constant
 	 */
-	Simulation(int width, int height, float particleSize, float kernelSupport = -1, float fluidDensity = 1, float viscosity = 1e-6, float stiffness = 2000, float gravity = 9.81);
-	
+	Simulation(int width, int height, float particleSize, float kernelSupport = -1, float fluidDensity = 1, float viscosity = 1e-6, float gravity = 9.81);
+
+	virtual ~Simulation();
+
 	/**
 		Add a new particle to the simulation
 		@param position position of the new particle
@@ -92,15 +94,13 @@ public:
 
 	float getViscosity() const;
 
-	float getStiffness() const;
-
 	float getGravity() const;
 
 	int getWidth() const;
 
 	int getHeight() const;
 
-private:
+protected:
 	// all particles in the simulation
 	std::vector<Particle> particles;
 
@@ -118,9 +118,6 @@ private:
 
 	// viscosity of the fluid
 	float viscosity;
-
-	// stiffness for the pressure acceleration computation
-	float stiffness;
 
 	// gravitational constant
 	float gravity;
@@ -149,9 +146,9 @@ private:
 	void computeDensitiesDifferential(const std::vector<std::vector<unsigned int>>& neighborVector, float timeDifference);
 
 	/**
-	 *	Compute and return pressure of each particle using a state equation
+	 *	Compute and return pressure of each particle
 	 */
-	std::vector<float> computePressuresSE() const;
+	virtual std::vector<float> computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) const;
 
 	/**
 	 *	Compute and return non-pressure accelerations
@@ -165,10 +162,6 @@ private:
 	std::vector<glm::vec2> computePressureAccelerations(const std::vector<std::vector<unsigned int>>& neighborVector,
 														const std::vector<float>& pressures) const;
 
-	/**
-	 *	Compute and return pressure acceleration using IISPH
-	 */
-	std::vector<float> computePressuresIISPH(const std::vector<std::vector<unsigned int>>& neighborVector, float timeDifference);
 	
 	/**
 	 *	Update velocity
