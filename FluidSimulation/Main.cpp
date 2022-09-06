@@ -152,6 +152,8 @@ int main(int argc, char* argv[])
 		char* picture_data = gui.get_picture_data();
 		io.save_picture(picture_data, width, height);
 		delete[] picture_data;
+
+		io.print_average_density(simulation->getParticles());
 	}
 	
 	delete simulation;
