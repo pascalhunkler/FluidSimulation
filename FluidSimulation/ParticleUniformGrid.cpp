@@ -45,9 +45,9 @@ unsigned int ParticleUniformGrid::getCellIndex(const Particle& particle) const
 
 unsigned ParticleUniformGrid::getCellIndex(const glm::vec2& pos) const
 {
-	const unsigned int k = int(pos.x) >= width ? int(float(width) / kernelSupport) : int(pos.x) < 0 ? 0 : int(pos.x / kernelSupport);
-	const unsigned int l = int(pos.y) >= height ? int(float(height) / kernelSupport) : int(pos.y) < 0 ? 0 : int(pos.y / kernelSupport);
-	return k + cols * l;
+	const unsigned int x = int(pos.x) >= width ? int(float(width) / kernelSupport) : int(pos.x) < 0 ? 0 : int(pos.x / kernelSupport);
+	const unsigned int y = int(pos.y) >= height ? int(float(height) / kernelSupport) : int(pos.y) < 0 ? 0 : int(pos.y / kernelSupport);
+	return x + cols * y;
 }
 
 

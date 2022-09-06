@@ -305,8 +305,8 @@ float Simulation::kernelFunction(float q) const
 {
 	float t1 = glm::max(1 - q, 0.f);
 	float t2 = glm::max(2 - q, 0.f);
-	float alpha = 5.f / (14.f * PI_F * particleSize * particleSize);
-	return alpha * (t2 * t2 * t2 - 4 * t1 * t1 * t1);
+	float sigma = 5.f / (14.f * PI_F * particleSize * particleSize);
+	return sigma * (t2 * t2 * t2 - 4 * t1 * t1 * t1);
 }
 
 glm::vec2 Simulation::kernelGradient(glm::vec2 xi, glm::vec2 xj) const
@@ -319,8 +319,8 @@ glm::vec2 Simulation::kernelGradient(glm::vec2 xi, glm::vec2 xj) const
 	
 	float t1 = glm::max(1 - q, 0.f);
 	float t2 = glm::max(2 - q, 0.f);
-	float alpha = 5.f / (14.f * PI_F * particleSize * particleSize);
-	return alpha * (xi - xj) / (q * particleSize * particleSize) * (-3 * t2 * t2 + 12 * t1 * t1);
+	float sigma = 5.f / (14.f * PI_F * particleSize * particleSize);
+	return sigma * (xi - xj) / (q * particleSize * particleSize) * (-3 * t2 * t2 + 12 * t1 * t1);
 }
 
 void Simulation::updateVelocity(std::vector<glm::vec2>& acc, float timeDifference)
