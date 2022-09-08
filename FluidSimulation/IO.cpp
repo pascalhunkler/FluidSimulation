@@ -162,20 +162,22 @@ void IO::decide_parameters(SimulationScenario& scenario, PressureComputationMeth
 	}
 
 	// Let the user decide about the gravity
-	std::cout << std::endl;
+	/*std::cout << std::endl;
 	std::cout << "Type in the gravity (0 - 50), default is 9.81" << std::endl;
 	std::cin >> gravity;
 	if (gravity < 0 || gravity > 50)
 	{
 		gravity = 9.81;
-	}
+	}*/
+	// gravity is fixed to 9.81
+	gravity = 9.81;
 
 	// If pressure computation method is compressible, decide about the stiffness
 	if (method == PressureComputationMethod::compressible)
 	{
 		std::cout << std::endl;
 		std::cout << "Type in the stiffness (0 - 1E+8), default is 1E+6" << std::endl;
-		std::cin >> gravity;
+		std::cin >> stiffness;
 		if (stiffness < 0 || stiffness > 1E+8)
 		{
 			stiffness = 1E+6;
@@ -184,9 +186,9 @@ void IO::decide_parameters(SimulationScenario& scenario, PressureComputationMeth
 
 	// Let the user decide about the time step
 	std::cout << std::endl;
-	std::cout << "Type in the time step (0.01 - 0.5), default is 0.08" << std::endl;
+	std::cout << "Type in the time step (0.001 - 0.5), default is 0.08" << std::endl;
 	std::cin >> timeStep;
-	if (timeStep < 0.01 || timeStep > 0.5)
+	if (timeStep < 0.001 || timeStep > 0.5)
 	{
 		timeStep = 0.08;
 	}
@@ -255,6 +257,10 @@ void IO::print_average_density(const std::vector<Particle>& particles) const
 	else
 	{
 		std::stringstream line_stream;
+		if (pictures == 1)
+		{
+			line_stream << "Iteration" << "\t" << "Durchschnittsdichte" << "\n";
+		}
 		line_stream << pictures << "\t" << average_density << "\n";
 		file_out << line_stream.str();
 		//const char* line = line_stream.str().c_str();
