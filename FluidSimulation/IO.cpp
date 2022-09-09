@@ -4,6 +4,7 @@
 #include <sstream>
 #include <filesystem>
 #include <ctime>
+#include <glm/glm.hpp>
 
 IO::IO()
 {
@@ -267,4 +268,37 @@ void IO::print_average_density(const std::vector<Particle>& particles) const
 		//file_out.write(line, );
 	}
 }
+
+void IO::print_cfl_condition(const std::vector<Particle>& particles, float timeStep, float particleSize)
+{
+	float max_speed = 0;
+	for (const Particle& particle : particles)
+	{
+		float particle_speed = glm::length(particle.velocity);
+		if (particle_speed > max_speed)
+		{
+			max_speed = particle_speed;
+		}
+	}
+	bool cfl_condition = max_speed < particleSize / timeStep;
+	std::string file_name = folder_name + "\\cfl_condition.txt";
+	std::fstream file_out(file_name, std::ios_base::in | std::ios_base::out | std::ios_base::app);
+	if (!file_out.is_open())
+	{
+		std::cout << "failed to open " << file_name << std::endl;
+	}
+	else
+	{
+		std::stringstream line_stream;
+		if (pictures == 1)
+		{
+			line_stream << "Iteration" << "\t" << "Durchschnittsdichte" << "\n";
+		}
+		line_stream << pictures << "\t" << cfl_condition << "\n";
+		file_out << line_stream.str();
+		//const char* line = line_stream.str().c_str();
+		//file_out.write(line, );
+	}
+}
+
 

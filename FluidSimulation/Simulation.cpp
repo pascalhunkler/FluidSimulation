@@ -79,7 +79,7 @@ void Simulation::performSimulationStep(float timeDifference)
 	updatePosition(timeDifference);
 
 	// update color of each non boundary particle
-	updateColor();
+	updateColor(timeDifference);
 }
 
 std::vector<float> Simulation::computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) const
@@ -354,7 +354,7 @@ void Simulation::updatePosition(float timeDifference)
 }
 
 
-void Simulation::updateColor()
+void Simulation::updateColor(float timeDifference)
 {
 	#pragma loop(hint_parallel(0))
 	for (unsigned int i = 0; i < particles.size(); ++i)
@@ -366,7 +366,7 @@ void Simulation::updateColor()
 
 		// change color according to the speed of the particle
 		float speed = glm::length(particles[i].velocity);
-		const float maxSpeed = 100;
+		const float maxSpeed = this->particleSize / timeDifference;
 		float red, green, blue;
 		if (speed < maxSpeed / 2)
 		{

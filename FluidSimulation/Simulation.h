@@ -176,6 +176,6 @@ protected:
 	/**
 	 *	Update colors of each particle
 	 */
-	void updateColor();
+	void updateColor(float timeDifference);
 };
 

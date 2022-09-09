@@ -154,6 +154,7 @@ int main(int argc, char* argv[])
 		delete[] picture_data;
 
 		io.print_average_density(simulation->getParticles());
+		io.print_cfl_condition(simulation->getParticles(), timeStep, particleSize);
 	}
 	
 	delete simulation;
