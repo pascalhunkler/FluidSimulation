@@ -13,7 +13,7 @@ private:
 	int pictures;
 public:
 	IO();
-	void decide_parameters(SimulationScenario& scenario, PressureComputationMethod& method, float& particleSize, float& viscosity, float& gravity, float& stiffness, float& timeStep);
+	void decide_parameters(SimulationScenario& scenario, int& fluid_depth, PressureComputationMethod& method, float& particle_size, float& viscosity, float& gravity, float& stiffness, float& timeStep);
 	void save_picture(char* picture_data, int width, int height);
 	void print_average_density(const std::vector<Particle>& particles) const;
 	void print_cfl_condition(const std::vector<Particle>& particles, float timeStep, float particleSize);

@@ -81,7 +81,7 @@ IO::IO()
 	}
 }
 
-void IO::decide_parameters(SimulationScenario& scenario, PressureComputationMethod& method, float& particleSize, float& viscosity, float& gravity, float& stiffness, float& timeStep)
+void IO::decide_parameters(SimulationScenario& scenario, int& fluid_depth, PressureComputationMethod& method, float& particle_size, float& viscosity, float& gravity, float& stiffness, float& timeStep)
 {
 	// Let the user decide what scenario to simulate
 	for (int i = 0; i < static_cast<int>(SimulationScenario::last); ++i)
@@ -127,6 +127,15 @@ void IO::decide_parameters(SimulationScenario& scenario, PressureComputationMeth
 		scenario = static_cast<SimulationScenario>(scenario_int);
 	}
 
+	// Let the user decide about the depth of the fluid
+	std::cout << std::endl;
+	std::cout << "Type in the depth of the fluid (1-100), default is 20" << std::endl;
+	std::cin >> fluid_depth;
+	if (fluid_depth < 1 || fluid_depth > 100)
+	{
+		fluid_depth = 20;
+	}
+
 	// Let the user decide about the method of pressure computation
 	std::cout << std::endl;
 	std::cout << "0" << "\t" << "incompressible" << std::endl;
@@ -147,17 +156,17 @@ void IO::decide_parameters(SimulationScenario& scenario, PressureComputationMeth
 	// Let the user decide about the particle size
 	std::cout << std::endl;
 	std::cout << "Type in the particle size (5-40), default is 8" << std::endl;
-	std::cin >> particleSize;
-	if (particleSize < 5 || particleSize > 40)
+	std::cin >> particle_size;
+	if (particle_size < 5 || particle_size > 40)
 	{
-		particleSize = 8;
+		particle_size = 8;
 	}
 
 	// Let the user decide about the viscosity
 	std::cout << std::endl;
-	std::cout << "Type in the viscosity (0 - 1000), default is 200" << std::endl;
+	std::cout << "Type in the viscosity (0 - 2000), default is 200" << std::endl;
 	std::cin >> viscosity;
-	if (viscosity < 0 || viscosity > 1000)
+	if (viscosity < 0 || viscosity > 2000)
 	{
 		viscosity = 200;
 	}
@@ -171,15 +180,15 @@ void IO::decide_parameters(SimulationScenario& scenario, PressureComputationMeth
 		gravity = 9.81;
 	}*/
 	// gravity is fixed to 9.81
-	gravity = 9.81;
+	gravity = 9.81f;
 
 	// If pressure computation method is compressible, decide about the stiffness
 	if (method == PressureComputationMethod::compressible)
 	{
 		std::cout << std::endl;
-		std::cout << "Type in the stiffness (0 - 1E+8), default is 1E+6" << std::endl;
+		std::cout << "Type in the stiffness (0 - 1E+10), default is 1E+6" << std::endl;
 		std::cin >> stiffness;
-		if (stiffness < 0 || stiffness > 1E+8)
+		if (stiffness < 0 || stiffness > 1E+10)
 		{
 			stiffness = 1E+6;
 		}
@@ -192,6 +201,30 @@ void IO::decide_parameters(SimulationScenario& scenario, PressureComputationMeth
 	if (timeStep < 0.001 || timeStep > 0.5)
 	{
 		timeStep = 0.08;
+	}
+
+
+	// print parameters in a file
+	std::string file_name = folder_name + "\\parameters.txt";
+	std::fstream file_out(file_name, std::ios_base::out);
+	if (!file_out.is_open())
+	{
+		std::cout << "failed to open " << file_name << std::endl;
+	}
+	else
+	{
+		std::stringstream stream;
+		stream << "Szenario: " << scenario_int << std::endl;
+		stream << "Flüssigkeitstiefe: " << fluid_depth << std::endl;
+		stream << "Druckberechnung: " << method_int << std::endl;
+		stream << "Partikelgröße: " << particle_size << std::endl;
+		stream << "Viskosität: " << viscosity << std::endl;
+		if (method == PressureComputationMethod::compressible)
+		{
+			stream << "Steifigkeitskonstante: " << stiffness << std::endl;
+		}
+		stream << "Zeitschritt: " << timeStep << std::endl;
+		file_out << stream.str();
 	}
 }
 
@@ -245,7 +278,12 @@ void IO::print_average_density(const std::vector<Particle>& particles) const
 		if(!particle.boundary)
 		{
 			++fluid_particles;
-			total_density += particle.density;
+			float density = particle.density;
+			if(density < 1)
+			{
+				density = 1;
+			}
+			total_density += density;
 		}
 	}
 	float average_density = total_density / static_cast<float>(fluid_particles);

@@ -63,7 +63,7 @@ std::vector<float> IncompressibleSimulation::computePressures(const std::vector<
 			}
 			laplacian *= particleMass * timeDifference * timeDifference;
 
-			pressure[i] += (0.5 / diagonal[i]) * (source[i] - laplacian);
+			pressure[i] += (0.5f / diagonal[i]) * (source[i] - laplacian);
 			if (pressure[i] < 0)
 			{
 				pressure[i] = 0;
