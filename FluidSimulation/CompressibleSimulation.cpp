@@ -6,11 +6,8 @@ CompressibleSimulation::CompressibleSimulation(int width, int height, float part
 	this->stiffness = stiffness;
 }
 
-std::vector<float> CompressibleSimulation::computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) const
+void CompressibleSimulation::computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference)
 {
-	std::vector<float> pressure;
-	pressure.resize(particles.size());
-
 #pragma loop(hint_parallel(0))
 	for (unsigned int i = 0; i < particles.size(); ++i)
 	{
@@ -18,13 +15,12 @@ std::vector<float> CompressibleSimulation::computePressures(const std::vector<st
 		{
 			continue;
 		}
-		pressure[i] = stiffness * (particles[i].density / fluidDensity - 1);
-		if (pressure[i] < 0)
+		particles[i].pressure = stiffness * (particles[i].density / fluidDensity - 1);
+		if (particles[i].pressure < 0)
 		{
-			pressure[i] = 0;
+			particles[i].pressure = 0;
 		}
 	}
-	return pressure;
 }
 
 float CompressibleSimulation::getStiffness() const

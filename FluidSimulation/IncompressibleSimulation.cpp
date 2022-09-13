@@ -7,10 +7,8 @@ IncompressibleSimulation::IncompressibleSimulation(int width, int height, float 
 }
 
 
-std::vector<float> IncompressibleSimulation::computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) const
+void IncompressibleSimulation::computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference)
 {
-	std::vector<float> pressure;
-	pressure.resize(particles.size());
 	std::vector<float> diagonal;
 	diagonal.resize(particles.size());
 	std::vector<float> source;
@@ -37,7 +35,7 @@ std::vector<float> IncompressibleSimulation::computePressures(const std::vector<
 		s *= -particleMass * timeDifference;
 		s += fluidDensity - particles[i].density;
 		source[i] = s;
-		pressure[i] = 0;
+		particles[i].pressure /= 2;
 	}
 
 	float error;
@@ -46,7 +44,7 @@ std::vector<float> IncompressibleSimulation::computePressures(const std::vector<
 	do
 	{
 		error = 0;
-		acc = computePressureAccelerations(neighborVector, pressure);
+		acc = computePressureAccelerations(neighborVector);
 
 		#pragma loop(hint_parallel(0))
 		for (unsigned int i = 0; i < particles.size(); ++i)
@@ -63,16 +61,14 @@ std::vector<float> IncompressibleSimulation::computePressures(const std::vector<
 			}
 			laplacian *= particleMass * timeDifference * timeDifference;
 
-			pressure[i] += (0.5f / diagonal[i]) * (source[i] - laplacian);
-			if (pressure[i] < 0)
+			particles[i].pressure += (0.5f / diagonal[i]) * (source[i] - laplacian);
+			if (particles[i].pressure < 0)
 			{
-				pressure[i] = 0;
+				particles[i].pressure = 0;
 			}
 			error += glm::abs((laplacian - source[i]) / fluidDensity);
 			amountParticles++;
 		}
 		error /= float(amountParticles);
 	} while (error >= 0.001);
-
-	return pressure;
 }

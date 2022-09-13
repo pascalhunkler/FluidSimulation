@@ -8,7 +8,7 @@ public:
     float getStiffness() const;
 private:
     // compute pressures with a state equation
-    std::vector<float> computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) const override;
+    void computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) override;
 
     // stiffness for the pressure acceleration computation
     float stiffness;

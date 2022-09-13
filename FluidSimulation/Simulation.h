@@ -148,7 +148,7 @@ protected:
 	/**
 	 *	Compute and return pressure of each particle
 	 */
-	virtual std::vector<float> computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) const;
+	virtual void computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference);
 
 	/**
 	 *	Compute and return non-pressure accelerations
@@ -159,8 +159,7 @@ protected:
 	/**
 	 *	Compute and return pressure acceleration
 	 */
-	std::vector<glm::vec2> computePressureAccelerations(const std::vector<std::vector<unsigned int>>& neighborVector,
-														const std::vector<float>& pressures) const;
+	std::vector<glm::vec2> computePressureAccelerations(const std::vector<std::vector<unsigned int>>& neighborVector) const;
 
 	
 	/**

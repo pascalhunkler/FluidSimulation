@@ -8,4 +8,5 @@ struct Particle
 	bool boundary;
 	glm::vec2 velocity = glm::vec2(0.f, 0.f);
 	float density = 0;
+	float pressure = 0;
 };

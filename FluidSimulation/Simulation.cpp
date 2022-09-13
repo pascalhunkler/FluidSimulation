@@ -69,10 +69,10 @@ void Simulation::performSimulationStep(float timeDifference)
 	//computeDensitiesDifferential(neighbors, timeDifference);
 
 	// compute pressure of each particle
-	std::vector<float> pressure = computePressures(neighbors, timeDifference);
+	computePressures(neighbors, timeDifference);
 	
 	// compute pressure accelerations
-	std::vector<glm::vec2> accP = computePressureAccelerations(neighbors, pressure);
+	std::vector<glm::vec2> accP = computePressureAccelerations(neighbors);
 
 	// update position and velocity of each particle
 	updateVelocity(accP, timeDifference);
@@ -82,16 +82,16 @@ void Simulation::performSimulationStep(float timeDifference)
 	updateColor(timeDifference);
 }
 
-std::vector<float> Simulation::computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference) const
+
+void Simulation::computePressures(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference)
 {
-	// This function is virtual and thus will be overridden, so just return a 0 vector.
+	// This function is virtual and thus will be overridden, so just set pressure to 0.
 	std::vector<float> pressure;
 	pressure.resize(particles.size());
 	for (unsigned int i = 0; i < particles.size(); ++i)
 	{
-		pressure[i] = 0;
+		particles[i].pressure = 0;
 	}
-	return pressure;
 }
 
 
@@ -256,7 +256,7 @@ std::vector<glm::vec2> Simulation::computeNonPressureAccelerations(const std::ve
 	return acc;
 }
 
-std::vector<glm::vec2> Simulation::computePressureAccelerations(const std::vector<std::vector<unsigned>>& neighborVector, const std::vector<float>& pressures) const
+std::vector<glm::vec2> Simulation::computePressureAccelerations(const std::vector<std::vector<unsigned>>& neighborVector) const
 {
 	std::vector<glm::vec2> acc;
 	acc.reserve(particles.size());
@@ -277,13 +277,13 @@ std::vector<glm::vec2> Simulation::computePressureAccelerations(const std::vecto
 			float factor;
 			if (particles[j].boundary)
 			{
-				factor = pressures[i] / (particles[i].density * particles[i].density);
-				factor += pressures[i] / (fluidDensity * fluidDensity);
+				factor = particles[i].pressure / (particles[i].density * particles[i].density);
+				factor += particles[i].pressure / (fluidDensity * fluidDensity);
 			}
 			else
 			{
-				factor = pressures[i] / (particles[i].density * particles[i].density);
-				factor += pressures[j] / (particles[j].density * particles[j].density);
+				factor = particles[i].pressure / (particles[i].density * particles[i].density);
+				factor += particles[j].pressure / (particles[j].density * particles[j].density);
 			}
 			acc_p -= factor * kernelGradient(particles[i].position, particles[j].position);
 		}
