@@ -45,7 +45,7 @@ void createSimulationScenario(Simulation& simulation, const SimulationScenario e
 	case SimulationScenario::leakyDam:
 		for (int x = width / 2 + (width / 2) % int(particle_size); x < width / 2 + (width / 2) % int(particle_size) + 6 * particle_size; x += int(particle_size))
 		{
-			for (int y = 3 * int(particle_size); y < (3 + fluid_depth) * int(particle_size); y += int(particle_size))
+			for (int y = 3 * int(particle_size); y < height / 6; y += int(particle_size))
 			{
 				simulation.addParticle(glm::vec2(x, y), glm::vec3(0.5f, 0.5f, 0.5f), true);
 			}
@@ -119,8 +119,8 @@ int main(int argc, char* argv[])
 	int fluid_depth;
 	PressureComputationMethod method;
 	float particle_size, viscosity, gravity, stiffness, timeStep;
-	IO io;
-	io.decide_parameters(scenario, fluid_depth, method, particle_size, viscosity, gravity, stiffness, timeStep);
+	IO* io = new IO();
+	io->decide_parameters(scenario, fluid_depth, method, particle_size, viscosity, gravity, stiffness, timeStep);
 
 	// Create GUI and simulation
 	const int width = 400;
@@ -130,11 +130,11 @@ int main(int argc, char* argv[])
 	switch (method)
 	{
 	case PressureComputationMethod::compressible:
-		simulation = new CompressibleSimulation(width, height, particle_size, 2 * particle_size, 1, viscosity, gravity, stiffness);
+		simulation = new CompressibleSimulation(width, height, particle_size, 1, viscosity, gravity, io, stiffness);
 		break;
 	case PressureComputationMethod::incompressible:
 	default:
-		simulation = new IncompressibleSimulation(width, height, particle_size, 2 * particle_size, 1, viscosity, gravity);
+		simulation = new IncompressibleSimulation(width, height, particle_size, 1, viscosity, gravity, io);
 		break;
 	}
 
@@ -151,13 +151,13 @@ int main(int argc, char* argv[])
 		gui.draw(simulation->getParticles());
 
 		char* picture_data = gui.get_picture_data();
-		io.save_picture(picture_data, width, height);
+		io->save_picture(picture_data, width, height);
 		delete[] picture_data;
 
-		io.print_average_density(simulation->getParticles());
-		io.print_cfl_condition(simulation->getParticles(), timeStep, particle_size);
+		io->print_cfl_condition(simulation->getParticles(), timeStep, particle_size);
 	}
 	
 	delete simulation;
+	delete io;
 	return 0;
 }

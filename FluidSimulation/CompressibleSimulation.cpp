@@ -1,7 +1,7 @@
 #include "CompressibleSimulation.h"
 
-CompressibleSimulation::CompressibleSimulation(int width, int height, float particleSize, float kernelSupport, float fluidDensity, float viscosity, float gravity, float stiffness)
-	: Simulation(width, height, particleSize, kernelSupport, fluidDensity, viscosity, gravity)
+CompressibleSimulation::CompressibleSimulation(int width, int height, float particleSize, float fluidDensity, float viscosity, float gravity, IO* io, float stiffness)
+	: Simulation(width, height, particleSize, fluidDensity, viscosity, gravity, io)
 {
 	this->stiffness = stiffness;
 }

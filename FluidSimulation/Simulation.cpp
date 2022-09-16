@@ -1,24 +1,22 @@
 #include "Simulation.h"
+#include "IO.h"
 #include <glm/glm.hpp>
 #include <cmath>
 #include <iostream>
 #include <array>
 
-Simulation::Simulation(int width, int height, float particleSize, float kernelSupport, float fluidDensity, float viscosity, float gravity)
+Simulation::Simulation(int width, int height, float particleSize, float fluidDensity, float viscosity, float gravity, IO* io)
 {
 	this->width = width;
 	this->height = height;
 	particles = std::vector<Particle>();
 	this->particleSize = particleSize;
-	if (kernelSupport == -1)
-	{
-		kernelSupport = 2 * particleSize;
-	}
-	this->kernelSupport = kernelSupport;
+	this->kernelSupport = 2 * particleSize;
 	this->fluidDensity = fluidDensity;
 	this->particleMass = fluidDensity * particleSize * particleSize;
 	this->viscosity = viscosity;
 	this->gravity = gravity;
+	this->io = io;
 }
 
 Simulation::~Simulation() = default;
@@ -185,9 +183,11 @@ void Simulation::computeDensitiesExplicit(const std::vector<std::vector<unsigned
 		particles[i].density = d;
 
 		amountFluidParticles++;
-		averageDensity += d;
+		// For the average density, the density is clamped so that the surface doesn't influence it
+		averageDensity += glm::max(fluidDensity, d);
 	}
-	averageDensity /= float(amountFluidParticles);
+	averageDensity /= static_cast<float>(amountFluidParticles);
+	io->print_average_density(averageDensity);
 }
 
 void Simulation::computeDensitiesDifferential(const std::vector<std::vector<unsigned>>& neighborVector, float timeDifference)

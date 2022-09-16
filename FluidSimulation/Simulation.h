@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <glm/glm.hpp>
+
+#include "IO.h"
 #include "Particle.h"
 #include "ParticleUniformGrid.h"
 
@@ -16,7 +18,7 @@ public:
 	 *	@param stiffness stiffness of the fluid, default value: 2000
 	 *	@param gravity gravitational constant
 	 */
-	Simulation(int width, int height, float particleSize, float kernelSupport = -1, float fluidDensity = 1, float viscosity = 1e-6, float gravity = 9.81);
+	Simulation(int width, int height, float particleSize, float fluidDensity, float viscosity, float gravity, IO* io);
 
 	virtual ~Simulation();
 
@@ -121,6 +123,9 @@ protected:
 
 	// gravitational constant
 	float gravity;
+
+	// io
+	IO* io;
 
 	// width of the simulation
 	int width;

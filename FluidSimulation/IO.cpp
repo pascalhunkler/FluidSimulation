@@ -6,6 +6,12 @@
 #include <ctime>
 #include <glm/glm.hpp>
 
+IO::IO(const IO& io)
+{
+	this->folder_name = io.folder_name;
+	this->pictures = io.pictures;
+}
+
 IO::IO()
 {
 	pictures = 0;
@@ -196,11 +202,11 @@ void IO::decide_parameters(SimulationScenario& scenario, int& fluid_depth, Press
 
 	// Let the user decide about the time step
 	std::cout << std::endl;
-	std::cout << "Type in the time step (0.001 - 0.5), default is 0.08" << std::endl;
+	std::cout << "Type in the time step (0.0001 - 0.5), default is 0.01" << std::endl;
 	std::cin >> timeStep;
-	if (timeStep < 0.001 || timeStep > 0.5)
+	if (timeStep < 0.0001 || timeStep > 0.5)
 	{
-		timeStep = 0.08;
+		timeStep = 0.01;
 	}
 
 
@@ -269,24 +275,8 @@ void IO::save_picture(char* picture_data, int width, int height)
 	}
 }
 
-void IO::print_average_density(const std::vector<Particle>& particles) const
+void IO::print_average_density(float average_density) const
 {
-	float total_density = 0;
-	int fluid_particles = 0;
-	for (const Particle& particle : particles)
-	{
-		if(!particle.boundary)
-		{
-			++fluid_particles;
-			float density = particle.density;
-			if(density < 1)
-			{
-				density = 1;
-			}
-			total_density += density;
-		}
-	}
-	float average_density = total_density / static_cast<float>(fluid_particles);
 	std::string file_name = folder_name + "\\average_density.txt";
 	std::fstream file_out(file_name, std::ios_base::in | std::ios_base::out | std::ios_base::app);
 	if (!file_out.is_open())
@@ -296,18 +286,16 @@ void IO::print_average_density(const std::vector<Particle>& particles) const
 	else
 	{
 		std::stringstream line_stream;
-		if (pictures == 1)
+		if (pictures == 0)
 		{
-			line_stream << "Iteration" << "\t" << "Durchschnittsdichte" << "\n";
+			line_stream << "Simulationsschritt" << "\t" << "Durchschnittsdichte" << "\n";
 		}
 		line_stream << pictures << "\t" << average_density << "\n";
 		file_out << line_stream.str();
-		//const char* line = line_stream.str().c_str();
-		//file_out.write(line, );
 	}
 }
 
-void IO::print_cfl_condition(const std::vector<Particle>& particles, float timeStep, float particleSize)
+void IO::print_cfl_condition(const std::vector<Particle>& particles, float timeStep, float particleSize) const
 {
 	float max_speed = 0;
 	for (const Particle& particle : particles)
@@ -330,13 +318,29 @@ void IO::print_cfl_condition(const std::vector<Particle>& particles, float timeS
 		std::stringstream line_stream;
 		if (pictures == 1)
 		{
-			line_stream << "Iteration" << "\t" << "Durchschnittsdichte" << "\n";
+			line_stream << "Simulationsschritt" << "\t" << "Durchschnittsdichte" << "\n";
 		}
 		line_stream << pictures << "\t" << cfl_condition << "\n";
 		file_out << line_stream.str();
-		//const char* line = line_stream.str().c_str();
-		//file_out.write(line, );
 	}
 }
 
-
+void IO::print_iterations(int iterations) const
+{
+	std::string file_name = folder_name + "\\iterations.txt";
+	std::fstream file_out(file_name, std::ios_base::in | std::ios_base::out | std::ios_base::app);
+	if (!file_out.is_open())
+	{
+		std::cout << "failed to open " << file_name << std::endl;
+	}
+	else
+	{
+		std::stringstream line_stream;
+		if (pictures == 0)
+		{
+			line_stream << "Simulationsschritt" << "\t" << "Iterationen" << "\n";
+		}
+		line_stream << pictures << "\t" << iterations << "\n";
+		file_out << line_stream.str();
+	}
+}
