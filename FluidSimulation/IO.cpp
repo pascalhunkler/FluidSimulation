@@ -135,9 +135,9 @@ void IO::decide_parameters(SimulationScenario& scenario, int& fluid_depth, Press
 
 	// Let the user decide about the depth of the fluid
 	std::cout << std::endl;
-	std::cout << "Type in the depth of the fluid (1-100), default is 20" << std::endl;
+	std::cout << "Type in the depth of the fluid (1-500), default is 20" << std::endl;
 	std::cin >> fluid_depth;
-	if (fluid_depth < 1 || fluid_depth > 100)
+	if (fluid_depth < 1 || fluid_depth > 500)
 	{
 		fluid_depth = 20;
 	}
@@ -161,9 +161,9 @@ void IO::decide_parameters(SimulationScenario& scenario, int& fluid_depth, Press
 
 	// Let the user decide about the particle size
 	std::cout << std::endl;
-	std::cout << "Type in the particle size (5-40), default is 8" << std::endl;
+	std::cout << "Type in the particle size (1-40), default is 8" << std::endl;
 	std::cin >> particle_size;
-	if (particle_size < 5 || particle_size > 40)
+	if (particle_size < 1 || particle_size > 40)
 	{
 		particle_size = 8;
 	}

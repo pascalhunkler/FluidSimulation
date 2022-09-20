@@ -153,50 +153,34 @@ void IncompressibleSimulation::computePressures(const std::vector<std::vector<un
 	
 	std::vector<float> source;
 	source.resize(particles.size());
-	#pragma loop(hint_parallel(0))
-	for (unsigned int i = 0; i < particles.size(); ++i)
-	{
-		source[i] = 0;
-		if (particles[i].boundary)
-		{
-			continue;
-		}
-		
-		for (auto& j : neighborVector[i])
-		{
-			source[i] += glm::dot(particles[i].velocity - particles[j].velocity, kernelGradient(particles[i].position, particles[j].position));
-		}
-		source[i] *= -timeDifference * particleMass;
-		source[i] += fluidDensity - particles[i].density;
-	}
-
 	std::vector<float> a_diagonal;
 	a_diagonal.resize(particles.size());
 	#pragma loop(hint_parallel(0))
 	for (unsigned int i = 0; i < particles.size(); ++i)
 	{
+		source[i] = 0;
 		a_diagonal[i] = 0;
 		if (particles[i].boundary)
 		{
 			continue;
 		}
+
 		glm::vec2 sum_nabla_w_ij = glm::vec2(0, 0);
 		for (auto& j : neighborVector[i])
 		{
-			sum_nabla_w_ij += kernelGradient(particles[i].position, particles[j].position);
+			glm::vec2 nabla_w_ij = kernelGradient(particles[i].position, particles[j].position);
+			sum_nabla_w_ij += nabla_w_ij;
+			source[i] += glm::dot(particles[i].velocity - particles[j].velocity, nabla_w_ij);
 		}
 		for (auto& j : neighborVector[i])
 		{
 			glm::vec2 nabla_w_ij = kernelGradient(particles[i].position, particles[j].position);
 			a_diagonal[i] += glm::dot(sum_nabla_w_ij + nabla_w_ij, nabla_w_ij);
 		}
+		source[i] *= -timeDifference * particleMass;
+		source[i] += fluidDensity - particles[i].density;
 		a_diagonal[i] *= -timeDifference * timeDifference * particleMass * particleMass / (fluidDensity * fluidDensity);
-	}
-	
-	#pragma loop(hint_parallel(0))
-	for (unsigned int i = 0; i < particles.size(); ++i)
-	{
-		particles[i].pressure = 0;
+		particles[i].pressure /= 2;
 	}
 
 	float error;
@@ -231,7 +215,7 @@ void IncompressibleSimulation::computePressures(const std::vector<std::vector<un
 				}
 				else
 				{
-					error += glm::abs(a_p - source[i]);
+					error += glm::abs((a_p - source[i]) / fluidDensity);
 					++amountParticles;
 				}
 			}

@@ -50,7 +50,7 @@ void createSimulationScenario(Simulation& simulation, const SimulationScenario e
 				simulation.addParticle(glm::vec2(x, y), glm::vec3(0.5f, 0.5f, 0.5f), true);
 			}
 
-			for (int y = height / 6 + 3 * int(particle_size); y <= height; y += int(particle_size))
+			for (int y = height / 6 + 5 * int(particle_size); y <= height; y += int(particle_size))
 			{
 				simulation.addParticle(glm::vec2(x, y), glm::vec3(0.5f, 0.5f, 0.5f), true);
 			}
@@ -123,8 +123,8 @@ int main(int argc, char* argv[])
 	io->decide_parameters(scenario, fluid_depth, method, particle_size, viscosity, gravity, stiffness, timeStep);
 
 	// Create GUI and simulation
-	const int width = 400;
-	const int height = 600;
+	const int width = 200;
+	const int height = 900;
 	GUI gui(width, height, particle_size);
 	Simulation* simulation;
 	switch (method)
