@@ -115,16 +115,17 @@ int main(int argc, char* argv[])
 	std::mt19937 mt(rd());
 	std::uniform_real_distribution<double> dist(0.0f, 1.0f);
 
+	int width;
+	int height;
 	SimulationScenario scenario;
 	int fluid_depth;
 	PressureComputationMethod method;
-	float particle_size, viscosity, gravity, stiffness, timeStep;
+	float particle_size, viscosity, gravity, stiffness, timeStep, max_error;
 	IO* io = new IO();
-	io->decide_parameters(scenario, fluid_depth, method, particle_size, viscosity, gravity, stiffness, timeStep);
+	io->decide_parameters( scenario, width, height, fluid_depth, particle_size, method, max_error, stiffness, viscosity, gravity, timeStep);
 
 	// Create GUI and simulation
-	const int width = 200;
-	const int height = 900;
+	
 	GUI gui(width, height, particle_size);
 	Simulation* simulation;
 	switch (method)
@@ -134,7 +135,7 @@ int main(int argc, char* argv[])
 		break;
 	case PressureComputationMethod::incompressible:
 	default:
-		simulation = new IncompressibleSimulation(width, height, particle_size, 1, viscosity, gravity, io);
+		simulation = new IncompressibleSimulation(width, height, particle_size, 1, viscosity, gravity, io, max_error);
 		break;
 	}
 

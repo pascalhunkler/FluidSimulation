@@ -76,8 +76,8 @@ IO::IO()
 		<< hour.str() << "_"
 		<< min.str() << "_"
 		<< sec.str();
-	folder_name = "C:\\Users\\Pascal\\Documents\\Simulationen\\" + name.str();
-	if (std::filesystem::create_directory(folder_name))
+	folder_name = "Simulationen//" + name.str();
+	if (std::filesystem::create_directories(folder_name))
 	{
 		std::cout << "Created folder " << folder_name << std::endl;
 	}
@@ -87,9 +87,29 @@ IO::IO()
 	}
 }
 
-void IO::decide_parameters(SimulationScenario& scenario, int& fluid_depth, PressureComputationMethod& method, float& particle_size, float& viscosity, float& gravity, float& stiffness, float& timeStep)
+void IO::decide_parameters(SimulationScenario& scenario, int& width, int& height, int& fluid_depth, float& particle_size,
+	PressureComputationMethod& method, float& max_error, float& stiffness, float& viscosity, float& gravity, float& timeStep)
 {
+	// Let the user decide about the window width
+	std::cout << std::endl;
+	std::cout << "Type in the window width, default is 400" << std::endl;
+	std::cin >> width;
+	if (width < 200 || width > 1000)
+	{
+		width = 400;
+	}
+
+	// Let the user decide about the window height
+	std::cout << std::endl;
+	std::cout << "Type in the window height, default is 600" << std::endl;
+	std::cin >> height;
+	if (height < 200 || height > 1000)
+	{
+		height = 600;
+	}
+
 	// Let the user decide what scenario to simulate
+	std::cout << std::endl;
 	for (int i = 0; i < static_cast<int>(SimulationScenario::last); ++i)
 	{
 		std::cout << i << '\t';
@@ -159,6 +179,32 @@ void IO::decide_parameters(SimulationScenario& scenario, int& fluid_depth, Press
 		method = static_cast<PressureComputationMethod>(method_int);
 	}
 
+
+	// If pressure computation method is incompressible, decide about the maximum density error
+	if (method == PressureComputationMethod::incompressible)
+	{
+		std::cout << std::endl;
+		std::cout << "Type in the maximum density error (1E-6 - 1), default is 1E-3" << std::endl;
+		std::cin >> max_error;
+		if (max_error < 1E-6f || max_error > 1)
+		{
+			max_error = 1E-3f;
+		}
+	}
+
+
+	// If pressure computation method is compressible, decide about the stiffness
+	if (method == PressureComputationMethod::compressible)
+	{
+		std::cout << std::endl;
+		std::cout << "Type in the stiffness (0 - 1E+10), default is 1E+6" << std::endl;
+		std::cin >> stiffness;
+		if (stiffness < 0.f || stiffness > 1E+10f)
+		{
+			stiffness = 1E+6f;
+		}
+	}
+
 	// Let the user decide about the particle size
 	std::cout << std::endl;
 	std::cout << "Type in the particle size (1-40), default is 8" << std::endl;
@@ -188,25 +234,13 @@ void IO::decide_parameters(SimulationScenario& scenario, int& fluid_depth, Press
 	// gravity is fixed to 9.81
 	gravity = 9.81f;
 
-	// If pressure computation method is compressible, decide about the stiffness
-	if (method == PressureComputationMethod::compressible)
-	{
-		std::cout << std::endl;
-		std::cout << "Type in the stiffness (0 - 1E+10), default is 1E+6" << std::endl;
-		std::cin >> stiffness;
-		if (stiffness < 0 || stiffness > 1E+10)
-		{
-			stiffness = 1E+6;
-		}
-	}
-
 	// Let the user decide about the time step
 	std::cout << std::endl;
-	std::cout << "Type in the time step (0.0001 - 0.5), default is 0.01" << std::endl;
+	std::cout << "Type in the time step (0.0001 - 1), default is 0.01" << std::endl;
 	std::cin >> timeStep;
-	if (timeStep < 0.0001 || timeStep > 0.5)
+	if (timeStep < 0.0001f || timeStep > 1.f)
 	{
-		timeStep = 0.01;
+		timeStep = 0.01f;
 	}
 
 
@@ -220,11 +254,17 @@ void IO::decide_parameters(SimulationScenario& scenario, int& fluid_depth, Press
 	else
 	{
 		std::stringstream stream;
+		stream << "Fensterbreite: " << width << std::endl;
+		stream << "Fensterhöhe: " << width << std::endl;
 		stream << "Szenario: " << scenario_int << std::endl;
 		stream << "Flüssigkeitstiefe: " << fluid_depth << std::endl;
 		stream << "Druckberechnung: " << method_int << std::endl;
 		stream << "Partikelgröße: " << particle_size << std::endl;
 		stream << "Viskosität: " << viscosity << std::endl;
+		if (method == PressureComputationMethod::incompressible)
+		{
+			stream << "Maximaler Dichtefehler: " << max_error << std::endl;
+		}
 		if (method == PressureComputationMethod::compressible)
 		{
 			stream << "Steifigkeitskonstante: " << stiffness << std::endl;

@@ -1,9 +1,9 @@
 #include "IncompressibleSimulation.h"
 
-IncompressibleSimulation::IncompressibleSimulation(int width, int height, float particleSize, float fluidDensity, float viscosity, float gravity, IO* io)
+IncompressibleSimulation::IncompressibleSimulation(int width, int height, float particleSize, float fluidDensity, float viscosity, float gravity, IO* io, float error)
 	: Simulation(width, height, particleSize, fluidDensity, viscosity, gravity, io)
 {
-	
+	this->max_error = error;
 }
 
 
@@ -223,7 +223,7 @@ void IncompressibleSimulation::computePressures(const std::vector<std::vector<un
 		}
 		error /= static_cast<float>(amountParticles);
 		++iterations;
-	} while (error >= 0.001f || iterations < 2);
+	} while (error >= max_error || iterations < 2);
 	io->print_iterations(iterations);
 	
 	/*
